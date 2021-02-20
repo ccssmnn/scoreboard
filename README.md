@@ -15,13 +15,13 @@ Google Hashcode problems are mostly large scale combinatorical optimization prob
 ### HTTP API
 
 1. Clone the project
-2. Start the server `go run main.go`
+2. Start the server `go run *.go`
 3. Run GET requests to receive problem files: `localhost:8080/static/2020/qualification/a_example.txt`
 4. Run POST request to submit your solutions: `localhost:8080/score/2020/qualification/a_example` and put your submission file into the request body
 
 ### Go
 
-Use the `scoreboard/obj` subpackage to parse problem and solution strings and compute the result.
+Use the `scoreboard/obj` subpackage to parse problem and solution strings and compute the result or use problem / solution structs directly.
 
 ## License
 
