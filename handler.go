@@ -144,3 +144,69 @@ func handleSlideshow(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprintf(w, "%v", score)
 }
+
+var allowedRidesProblems = []string{
+	"a_example",
+	"b_should_be_easy",
+	"c_no_hurry",
+	"d_metropolis",
+	"e_high_bonus",
+}
+
+var ridesProblems = map[string]*obj.RidesProblem{}
+
+// handleRides handles a Photo Rides related http request
+func handleRides(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	problem := vars["problem"]
+	// check if problem is supported
+	if !stringInSlice(problem, allowedRidesProblems) {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "requested problem is not supported")
+		return
+	}
+	// read problem file if not done already
+	if _, found := ridesProblems[problem]; !found {
+		bp := obj.RidesProblem{}
+		file, err := ioutil.ReadFile("static/2018/qualification/" + problem + ".txt")
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "failed to read problem file: %v", err)
+			return
+		}
+		err = bp.Parse(string(file))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "failed to parse problem: %v", err)
+			return
+		}
+		ridesProblems[problem] = &bp
+	}
+	// read solution
+	defer r.Body.Close()
+
+	bytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "failed to read request body: %v", err)
+			return
+		}
+	}
+
+	solution := make(obj.RidesSolution, 0)
+	err = solution.Parse(string(bytes))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "failed to parse solution from request body: %v", err)
+		return
+	}
+	// compute result
+	score, err := obj.RidesScore(ridesProblems[problem], &solution)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "failed to compute score: %v", err)
+		return
+	}
+	fmt.Fprintf(w, "%v", score)
+}
