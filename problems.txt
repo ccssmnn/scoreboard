@@ -1,5 +1,0 @@
-a_example.txt
-b_should_be_easy.txt
-c_no_hurry.txt
-d_metropolis.txt
-e_high_bonus.txt
